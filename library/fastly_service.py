@@ -685,6 +685,20 @@ class FastlyClient(object):
         'request_setting': 'request_settings',
         'dictionary': 'dictionaries'
     }
+    setting_names = [
+        'domain',
+        'condition',
+        'healthcheck',
+        'backend',
+        'gzip',
+        'header',
+        'response_object',
+        'vcl',
+        's3',
+        'scalyr',
+        'request_setting',
+        'dictionary',
+    ]
     api_endpoints = {
         'domain': '/service/%s/version/%s/domain',
         'healthcheck': '/service/%s/version/%s/healthcheck',
@@ -848,7 +862,7 @@ class FastlyStateEnforcer(object):
         self.client = client
 
     def get_setting_names(self):
-        return self.client.api_endpoints.keys()
+        return self.client.setting_names
 
     def get_setting_name_plural(self, setting_name):
         return self.client.setting_name_plurals.get(setting_name, setting_name+'s')
@@ -921,8 +935,9 @@ class FastlyStateEnforcer(object):
                     self.client.call_api("create", setting_name, service_id, version_number, item)
 
             # any items in current_settings are not needed, remove
-            for item in current_items:
-                self.client.call_api("delete", setting_name, service_id, version_number, item)
+            if current_items is not None:
+                for item in current_items:
+                    self.client.call_api("delete", setting_name, service_id, version_number, item)
 
         if activate_version:
             self.client.activate_version(service_id, version_number)
